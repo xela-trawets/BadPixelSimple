@@ -6,13 +6,22 @@ using System.Threading.Tasks;
 
 namespace BadPixelSimpleApp
 {
-    public record BadPixel(int RawX, int RawY);
+    //public struct BadPixel { public int RawX; public int RawY; };
+    public enum BadPixelFixCategory
+    {
+        DontFix = 0,
+        PCRFix = 1,
+        SoftwareFix = 2
+    }
+    public record BadPixelRec(int RawX, int RawY, BadPixelFixCategory Category = BadPixelFixCategory.PCRFix);
     public record BadRow(int RawY);
     public record BadColumn(int RawX);
     public record BadPixelList(string DetectorId)
     {
-        public static List<BadPixel> BadPixels { set; get; } = new();
-        public static List<BadRow> BadRows { set; get; } = new();
-        public static List<BadColumn> BadColumns { set; get; } = new();
+        //public List<List<int>> BadPixels { set; get; } = new();
+        //public List<(int RawX, int RawY)> BadPixels { set; get; } = new();
+        public List<BadPixelRec> BadPixels { set; get; } = new();
+        public List<int> BadRows { set; get; } = new();
+        public List<int> BadColumns { set; get; } = new();
     }
 }

@@ -4,19 +4,40 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BadPixelSimpleApp
 {
     class Program
     {
+        public AsicDescriptor();
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
             Console.WriteLine($"Usage {Path.GetFileName(Environment.ProcessPath)} BadPixelFile.json");
             var bpl = new BadPixelList("001");
-            var jso = new JsonSerializerOptions() { WriteIndented= true }
-            string json = JsonSerializer.Serialize(bpl);
-            File.WriteAllText(@"C:\tmp\bpl.json",json);
+            var swFix = BadPixelFixCategory.SoftwareFix;
+            bpl.BadPixels.AddRange(new List<BadPixelRec>() { new(12, 21, swFix), new(18, 81) });
+            bpl.BadColumns.Add(17);
+            bpl.BadRows.Add(0);
+            bpl.BadRows.Add(1);
+            bpl.BadRows.Add(254);
+            bpl.BadRows.Add(255);
+            var jso = new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                IncludeFields = true,
+            };
+            jso.Converters.Add(new JsonStringEnumConverter());
+            string json = JsonSerializer.Serialize(bpl, jso);
+            File.WriteAllText(@"C:\tmp\bpl.json", json);
+            bpl = JsonSerializer.Deserialize<BadPixelList>(json);
+            const AsicWidth = 128;
+            foreach (var badpix in bpl.BadPixels)
+            {
+                if (badpix.Category!=BadPixelFixCategory.PCRFix) continue;
+                int asicIndex = badpix.RawX / AsicWidth;
+            }
         }
         static (int byteIndex, int bitInByte) IndexOfBadPixeInPCR(int badPixelX, int badPixelY, int pcrBit = 14)
         //Hard coded for Stanley Thor 
@@ -58,7 +79,7 @@ namespace BadPixelSimpleApp
                 if ((value & t) != 0) yield return index * 8 + n;
             }
         }
-        public static void Main()
+        public static void MainOriginal()
         {
             Console.WriteLine("Hello Ally World!");
             Random rand = new Random();
@@ -130,6 +151,7 @@ namespace BadPixelSimpleApp
             }
             File.WriteAllBytes(@"c:\tmp\462_B.pcr", pcrBytes);
         }
+
         const int bitsPerAsic = 557184;
         const int bytesPerAsic = ((bitsPerAsic + 31) / 32) * 4;
         const int pcrByteSize = bytesPerAsic * asicCount;

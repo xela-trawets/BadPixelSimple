@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,15 +11,54 @@ namespace BadPixelSimpleApp
 {
     class Program
     {
-        public AsicDescriptor();
         static void Main(string[] args)
         {
+            //Test();
             Console.WriteLine("Hello World!");
             Console.WriteLine($"Usage {Path.GetFileName(Environment.ProcessPath)} BadPixelFile.json");
-            var bpl = new BadPixelList("001");
+            var jsonPath = (args[0] is string path) ? @"c:\tmp\bpl.json";
+            var bpl = LoadJson(jsonPath);
+
+            var detAsicInfo = bpl.DetectorPcrInfo; //Thor with { AsicCount = 8 };
+
+            var pcrData = new byte[detAsicInfo.PcrByteSize];
+            foreach (var badpix in bpl.BadPixels)
+            {
+                if (badpix.Category != BadPixelFixCategory.PCRFix) continue;
+                var badPixBitpos = detAsicInfo.IndexOfBadPixeInPCR(badpix.RawX, badpix.RawY, pcrBit: 14);
+            }
+            File.WriteAllBytes($@"c:\tmp\{bpl.DetectorId}.pcr", pcrData);
+        }
+        static public BadPixelList LoadJson(string jsonPath)
+        {
+            var jso = new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                IncludeFields = true,
+            };
+            jso.Converters.Add(new JsonStringEnumConverter());
+            string json = File.ReadAllText(jsonPath);
+            var bpl = JsonSerializer.Deserialize<BadPixelList>(json, jso);
+            LintBadPixelList(bpl);
+            return bpl;
+        }
+        static public void LintBadPixelList(BadPixelList bpl)
+        {
+            Debug.Assert(bpl.JsonVersion <= BadPixelList.CurrentJsonVersion);
+            var detAsicInfo = bpl.DetectorPcrInfo; //Thor with { AsicCount = 8 };
+            foreach (var badpix in bpl.BadPixels)
+            {
+                Debug.Assert((uint)badpix.RawX < detAsicInfo.DetWidth);
+                Debug.Assert((uint)badpix.RawY < detAsicInfo.AsicHeight);
+            }
+        }
+        static void Test()
+        {
+            var detectorId = "001";
+            var bpl = new BadPixelList(detectorId, DetectorModelClass.Thor, 8);
             var swFix = BadPixelFixCategory.SoftwareFix;
             bpl.BadPixels.AddRange(new List<BadPixelRec>() { new(12, 21, swFix), new(18, 81) });
-            bpl.BadColumns.Add(17);
+            bpl.BadColumns.Add(57);
             bpl.BadRows.Add(0);
             bpl.BadRows.Add(1);
             bpl.BadRows.Add(254);
@@ -31,13 +71,24 @@ namespace BadPixelSimpleApp
             jso.Converters.Add(new JsonStringEnumConverter());
             string json = JsonSerializer.Serialize(bpl, jso);
             File.WriteAllText(@"C:\tmp\bpl.json", json);
-            bpl = JsonSerializer.Deserialize<BadPixelList>(json);
-            const AsicWidth = 128;
+            bpl = JsonSerializer.Deserialize<BadPixelList>(json, jso);
+            var detAsicInfo = bpl.DetectorPcrInfo; //Thor with { AsicCount = 8 };
+            var pcrData = new byte[detAsicInfo.PcrByteSize];
             foreach (var badpix in bpl.BadPixels)
             {
-                if (badpix.Category!=BadPixelFixCategory.PCRFix) continue;
-                int asicIndex = badpix.RawX / AsicWidth;
+                Debug.Assert((uint)badpix.RawX < detAsicInfo.DetWidth);
+                Debug.Assert((uint)badpix.RawY < detAsicInfo.AsicHeight);
+                if (badpix.Category != BadPixelFixCategory.PCRFix) continue;
+                int kpbp = PcrTestImplementation.KillPixBitPos(badpix.RawX, badpix.RawY);
+
+                int asicIndex = badpix.RawX / detAsicInfo.AsicWidth;
+                int asicX = badpix.RawX % detAsicInfo.AsicWidth;
+                int asicY = badpix.RawY;//Folded sensor transform
+
+                var badPixBitpos = detAsicInfo.IndexOfBadPixeInPCR(badpix.RawX, badpix.RawY, pcrBit: 14);
+                Console.WriteLine($"{kpbp} ==? {badPixBitpos} ");
             }
+            File.WriteAllBytes(@$"c:\tmp\{detectorId}.pcr", pcrData);
         }
         static (int byteIndex, int bitInByte) IndexOfBadPixeInPCR(int badPixelX, int badPixelY, int pcrBit = 14)
         //Hard coded for Stanley Thor 

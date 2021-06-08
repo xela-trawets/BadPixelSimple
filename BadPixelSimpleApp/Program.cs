@@ -26,7 +26,8 @@ namespace BadPixelSimpleApp
             {
                 Console.WriteLine($"Cannot read Input json File {jsonPath} ");
                 Console.WriteLine($"Usage {Path.GetFileName(Environment.ProcessPath)} BadPixelFile.json");
-                // Environment.Exit(-1);
+                // comment for testing
+                //Environment.Exit(-1);
                 jsonPath = @"Test.json";
             }
             string pcrOutputPath = Path.Combine(Path.GetDirectoryName(jsonPath), $"pcrmask.config");

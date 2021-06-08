@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BadPixelSimpleApp
@@ -19,14 +20,15 @@ namespace BadPixelSimpleApp
         Thor = 1,
         Hydra = 2
     }
+    public static class Global { public const int CurrentJsonVersion = 90; }
     public record BadPixelRec(int RawX, int RawY, BadPixelFixCategory Category = BadPixelFixCategory.PCRFix);
-    public record BadPixelList(string DetectorId, DetectorModelClass ThorOrHydra, int AsicCount, string JsonVersionName = "Joe",int JsonVersion = CurrentJsonVersion)
+    public record BadPixelList(string DetectorId, DetectorModelClass ThorOrHydra, int AsicCount, string JsonVersionName = "Joe", int JsonVersion = Global.CurrentJsonVersion)
     {
-        public const int CurrentJsonVersion = 90;
         //public List<List<int>> BadPixels { set; get; } = new();
         //public List<(int RawX, int RawY)> BadPixels { set; get; } = new();
         static DetectorPcrDescriptor Thor = new DetectorPcrDescriptor(128, 256, 0);//set width before use
         static DetectorPcrDescriptor Hydra = new DetectorPcrDescriptor(256, 64, 0);//set width before use
+        [JsonIgnore]
         public DetectorPcrDescriptor DetectorPcrInfo => ThorOrHydra switch
         {
             DetectorModelClass.Thor => Thor with { AsicCount = AsicCount },

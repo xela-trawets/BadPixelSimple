@@ -1,0 +1,28 @@
+{
+  "DetectorId": "001",
+  "ThorOrHydra": "Thor",
+  "AsicCount": 8,
+  "JsonVersionName": "Joe",
+  "JsonVersion": 90,
+  "BadPixels": [
+    {
+      "RawX": 12,
+      "RawY": 21,
+      "Category": "SoftwareFix"
+    },
+    {
+      "RawX": 18,
+      "RawY": 81,
+      "Category": "PCRFix"
+    }
+  ],
+  "BadRows": [
+    0,
+    1,
+    254,
+    255
+  ],
+  "BadColumns": [
+    57
+  ]
+}

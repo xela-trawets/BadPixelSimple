@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DetConfigReader\DetConfigReader.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Test.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

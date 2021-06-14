@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DetConfigReader;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,7 +20,11 @@ namespace BadPixelSimpleApp
      /// <param name="args">Json input file See Test.Json for example</param>
         static void Main(string[] args)
         {
-            Test();
+            var di = DetConfigReader.DetConfigReader.TelnetDetInfo("192.168.184.130").Result;
+            Console.WriteLine(di);
+
+            var rem = "scp -o "StrictHostKeyChecking = no" -F "NUL" -P 22  "C: \Users\AlexA\test.ias" root@192.168.184.130:/media/card/user/";
+            //Test();
             //Sort out parameters
             Console.WriteLine("Hello World!");
             var jsonPath = (args is { Length: > 0 }) ? args[0] ?? null : null;
@@ -95,6 +101,8 @@ namespace BadPixelSimpleApp
         }
         static void Test()
         {
+            var di = DetConfigReader.DetConfigReader.TelnetDetInfo("192.168.184.130").Result;
+            Console.WriteLine(di);
             var detectorId = "001";
             var bpl = new BadPixelList(detectorId, DetectorModelClass.Thor, 8);
             var swFix = BadPixelFixCategory.SoftwareFix;

@@ -23,7 +23,7 @@ namespace BadPixelSimpleApp
             var di = DetConfigReader.DetConfigReader.TelnetDetInfo("192.168.184.130").Result;
             Console.WriteLine(di);
 
-            var rem = "scp -o "StrictHostKeyChecking = no" -F "NUL" -P 22  "C: \Users\AlexA\test.ias" root@192.168.184.130:/media/card/user/";
+            //var rem = "scp -o "StrictHostKeyChecking = no" -F "NUL" -P 22  "C: \Users\AlexA\test.ias" root@192.168.184.130:/media/card/user/";
             //Test();
             //Sort out parameters
             Console.WriteLine("Hello World!");
